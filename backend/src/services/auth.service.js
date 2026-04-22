@@ -3,45 +3,71 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
 exports.registerUser = async (data) => {
-    const { name, email, password } = data;
+  const { name, email, password } = data;
 
-    // ici on va verifier est ce que l'utilisateur existe
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
-        throw new Error('User already exists');
-    }
+  const existingUser = await User.findOne({ email });
+  if (existingUser) {
+    throw new Error('User already exists');
+  }
 
-    // Hash password
-    const hashedPassword = await bcrypt.hash(password, 10);
+  // validation password
+  const regex = /^(?=.*[a-z])(?=.*[A-Z]).{8,}$/;
+  if (!regex.test(password)) {
+    throw new Error('Password must have 8 chars, uppercase & lowercase');
+  }
 
-    // creation de l'utilisateur
-    const user = await User.create({
-        name,
-        email,
-        password: hashedPassword
-    });
+  const hashedPassword = await bcrypt.hash(password, 10);
 
-    exports.loginUser = async (data) => {
-        const { email, password } = data;
+  const user = await User.create({
+    name,
+    email,
+    password: hashedPassword
+  });
 
-        const user = await User.findOne({ email });
-        if (!user) {
-            throw new Error('Invalid credentials');
-        }
+  return {
+    id: user._id,
+    name: user.name,
+    email: user.email
+  };
+};
 
-        // verification mot de passe
-        const isMatch = await bcrypt.compare(password, user.password);
-        if (!isMatch) {
-            throw new Error('Invalid credentials');
-        }
+exports.loginUser = async (data) => {
+  const { email, password } = data;
 
-        //Generer token
-        const token = jwt.sign(
-            { id: user._id},
-            process.env.JWT_SECRET,
-            { expiresIn: '7d'}
-        );
+  const user = await User.findOne({ email });
 
-        return { user, token};
-    };
-}
+  if (!user) {
+    throw new Error('Invalid credentials');
+  }
+
+  // 🚫 BLOQUAGE USER
+  if (user.isBlocked) {
+    throw new Error('Account blocked by admin');
+  }
+
+  const isMatch = await bcrypt.compare(password, user.password);
+
+  if (!isMatch) {
+    throw new Error('Invalid credentials');
+  }
+
+  const token = jwt.sign(
+    {
+      id: user._id,
+      role: user.role
+    },
+    process.env.JWT_SECRET,
+    { expiresIn: '7d' }
+  );
+
+  return {
+    user: {
+      id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      permissions: user.permissions
+    },
+    token
+  };
+};
