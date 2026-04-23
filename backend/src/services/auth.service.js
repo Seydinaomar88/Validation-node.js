@@ -2,18 +2,23 @@ const User = require('../models/User');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
+/**
+ * REGISTER
+ */
 exports.registerUser = async (data) => {
   const { name, email, password } = data;
 
   const existingUser = await User.findOne({ email });
   if (existingUser) {
-    throw new Error('User already exists');
+    throw new Error('Cet utilisateur existe déjà');
   }
 
   // validation password
   const regex = /^(?=.*[a-z])(?=.*[A-Z]).{8,}$/;
   if (!regex.test(password)) {
-    throw new Error('Password must have 8 chars, uppercase & lowercase');
+    throw new Error(
+      'Le mot de passe doit contenir au moins 8 caractères, une majuscule et une minuscule'
+    );
   }
 
   const hashedPassword = await bcrypt.hash(password, 10);
@@ -31,6 +36,9 @@ exports.registerUser = async (data) => {
   };
 };
 
+/**
+ * LOGIN
+ */
 exports.loginUser = async (data) => {
   const { email, password } = data;
 
@@ -40,15 +48,15 @@ exports.loginUser = async (data) => {
     throw new Error("Email ou mot de passe incorrect");
   }
 
-  //BLOQUAGE USER
+  // USER BLOQUÉ
   if (user.isBlocked) {
-    throw new Error('Account blocked by admin');
+    throw new Error('Votre compte est bloqué par l’administrateur');
   }
 
   const isMatch = await bcrypt.compare(password, user.password);
 
   if (!isMatch) {
-    throw new Error('Invalid credentials');
+    throw new Error("Email ou mot de passe incorrect");
   }
 
   const token = jwt.sign(
