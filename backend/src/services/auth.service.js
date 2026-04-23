@@ -37,7 +37,7 @@ exports.loginUser = async (data) => {
   const user = await User.findOne({ email });
 
   if (!user) {
-    throw new Error('Invalid credentials');
+    throw new Error("Email ou mot de passe incorrect");
   }
 
   //BLOQUAGE USER
