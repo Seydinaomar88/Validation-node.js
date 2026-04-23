@@ -40,7 +40,7 @@ exports.loginUser = async (data) => {
     throw new Error('Invalid credentials');
   }
 
-  // 🚫 BLOQUAGE USER
+  //BLOQUAGE USER
   if (user.isBlocked) {
     throw new Error('Account blocked by admin');
   }
