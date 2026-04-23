@@ -1,0 +1,92 @@
+import React, { useState } from "react";
+import { X } from "lucide-react";
+
+const ModalPost = () => {
+  const [title, setTitle] = useState("");
+  const [content, setContent] = useState("");
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    setTitle("");
+    setContent("");
+    document.getElementById("my_modal_2").close();
+  };
+
+  return (
+    <dialog id="my_modal_2" className="modal bg-black/20 backdrop-blur-sm">
+      <div className="modal-box bg-white rounded-2xl shadow-xl max-w-lg p-0">
+        <div className="flex justify-between items-center border-b border-gray-100 px-6 py-4">
+          <h3 className="font-bold text-xl text-gray-800">
+            Créer un nouveau post
+          </h3>
+          <form method="dialog">
+            <button className="text-gray-400 hover:text-gray-700 hover:bg-gray-100 p-2 rounded-full transition-colors focus:outline-none">
+              <X size={20} />
+            </button>
+          </form>
+        </div>
+
+        <form onSubmit={handleSubmit} className="p-6 flex flex-col gap-5">
+          <div>
+            <label
+              htmlFor="title"
+              className="block text-sm font-medium text-gray-700 mb-1.5"
+            >
+              Titre du post
+            </label>
+            <input
+              id="title"
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="Ex: Mon premier atelier Node.js"
+              className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-100 focus:border-blue-400 text-gray-800 outline-none transition-all placeholder:text-gray-400"
+              required
+            />
+          </div>
+
+          <div>
+            <label
+              htmlFor="content"
+              className="block text-sm font-medium text-gray-700 mb-1.5"
+            >
+              Contenu
+            </label>
+            <textarea
+              id="content"
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              placeholder="De quoi voulez-vous discuter ?"
+              rows="5"
+              className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-100 focus:border-blue-400 text-gray-800 outline-none transition-all resize-none placeholder:text-gray-400"
+              required
+            ></textarea>
+          </div>
+
+          <div className="mt-2 flex justify-end gap-3">
+            <button
+              type="button"
+              onClick={() => document.getElementById("my_modal_2").close()}
+              className="px-5 py-2.5 text-sm font-medium text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+            >
+              Annuler
+            </button>
+
+            <button
+              type="submit"
+              className="px-5 py-2.5 text-sm font-medium text-white bg-blue-600 rounded-lg shadow-sm hover:bg-blue-700 hover:shadow-md transition-all"
+            >
+              Publier
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <form method="dialog" className="modal-backdrop">
+        <button className="cursor-default">close</button>
+      </form>
+    </dialog>
+  );
+};
+
+export default ModalPost;
