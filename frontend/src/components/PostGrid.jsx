@@ -1,6 +1,7 @@
 // PostGrid.jsx
 import React from "react";
 import PostCard from "./PostCard"; // Assurez-vous d'avoir ce composant
+import Pagination from "./Pagination";
 
 const PostGrid = () => {
   // Données factices pour 6 posts
@@ -80,7 +81,7 @@ const PostGrid = () => {
       <h1 className="text-3xl font-extrabold text-gray-900 mb-10 text-center">
         Explorez les publications récents
       </h1>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
         {postsData.map((post, index) => (
           <PostCard
             key={index}
@@ -91,6 +92,7 @@ const PostGrid = () => {
           />
         ))}
       </div>
+      <Pagination />
     </div>
   );
 };

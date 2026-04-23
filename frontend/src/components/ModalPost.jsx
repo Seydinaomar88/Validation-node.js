@@ -1,16 +1,39 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { X } from "lucide-react";
 
 const ModalPost = () => {
-  const [title, setTitle] = useState("");
-  const [content, setContent] = useState("");
+  const [error, setError] = useState("");
+  const [postData, setPostData] = useState({ title: "", content: "" });
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    setTitle("");
-    setContent("");
-    document.getElementById("my_modal_2").close();
-  };
+  // const { user, addPosts } = usePosts();
+  // console.log("user de addPosts : ", user);
+
+  // const handlePosts = async (e) => {
+  //   e.preventDefault();
+
+  //   if (!postData.title || !postData.content) {
+  //     setError("tous les champs sont requis");
+  //     return;
+  //   }
+
+  //   try {
+  //     const res = await addPosts(postData);
+  //     console.log(res);
+  //     document.getElementById("my_modal_2").close();
+  //   } catch (error) {
+  //     console.log(error);
+  //   }
+  // };
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setError("");
+    }, 3000);
+
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [error]);
 
   return (
     <dialog id="my_modal_2" className="modal bg-black/20 backdrop-blur-sm">
@@ -19,6 +42,7 @@ const ModalPost = () => {
           <h3 className="font-bold text-xl text-gray-800">
             Créer un nouveau post
           </h3>
+          {error && <p className="text-red-600 text-sm">{error}</p>}
           <form method="dialog">
             <button className="text-gray-400 hover:text-gray-700 hover:bg-gray-100 p-2 rounded-full transition-colors focus:outline-none">
               <X size={20} />
@@ -26,7 +50,7 @@ const ModalPost = () => {
           </form>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 flex flex-col gap-5">
+        <form onSubmit={{}} className="p-6 flex flex-col gap-5">
           <div>
             <label
               htmlFor="title"
@@ -37,11 +61,12 @@ const ModalPost = () => {
             <input
               id="title"
               type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
+              value={postData.title}
+              onChange={(e) =>
+                setPostData({ ...postData, title: e.target.value })
+              }
               placeholder="Ex: Mon premier atelier Node.js"
               className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-100 focus:border-blue-400 text-gray-800 outline-none transition-all placeholder:text-gray-400"
-              required
             />
           </div>
 
@@ -54,12 +79,13 @@ const ModalPost = () => {
             </label>
             <textarea
               id="content"
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
+              value={postData.content}
+              onChange={(e) =>
+                setPostData({ ...postData, content: e.target.value })
+              }
               placeholder="De quoi voulez-vous discuter ?"
               rows="5"
               className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-100 focus:border-blue-400 text-gray-800 outline-none transition-all resize-none placeholder:text-gray-400"
-              required
             ></textarea>
           </div>
 
