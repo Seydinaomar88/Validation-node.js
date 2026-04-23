@@ -4,9 +4,15 @@ import { Link } from "react-router-dom";
 
 const PostCard = ({ title, body, initialLikes = 0 }) => {
   const [likes, setLikes] = useState(initialLikes);
+  const [liked, setLiked] = useState(false);
 
   const handleLike = () => {
-    setLikes(likes + 1);
+    if (liked) {
+      setLikes(likes - 1);
+    } else {
+      setLikes(likes + 1);
+    }
+    setLiked(!liked);
   };
 
   return (

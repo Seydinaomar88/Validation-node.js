@@ -5,7 +5,6 @@ import toast from "react-hot-toast";
 
 const Register = () => {
   const navigate = useNavigate();
-  const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
   const [userData, setUserData] = useState({
     name: "",
@@ -24,21 +23,25 @@ const Register = () => {
 
       const role = freshUser?.user?.role || freshUser?.role;
 
+      if (freshUser && freshUser.token) {
+        localStorage.setItem("token01", freshUser.token);
+      }
+
       if (role === "admin") {
         navigate("/dashboard");
       } else if (role === "user") {
         navigate("/home");
       } else {
         toast.error("Rôle non reconnu");
-        navigate("/");
         return;
       }
     } catch (error) {
-      console.log(error);
-      setError(error);
-      toast.error("Email ou mot de passe incorrect");
-    } finally {
-      setLoading(false);
+      const serverMessage =
+        error.response?.data?.message || "Erreur lors de la connexion";
+
+      console.error("Détails de l'erreur 400 :", error.response?.data);
+
+      toast.error(serverMessage);
     }
   };
 
@@ -85,12 +88,6 @@ const Register = () => {
               className="absolute right-3 top-3 text-gray-500 hover:text-gray-700"
             ></button>
           </div>
-        </div>
-
-        <div>
-          {error && (
-            <h1 className="text-center font-medium text-red-600">{error}</h1>
-          )}
         </div>
 
         <button
