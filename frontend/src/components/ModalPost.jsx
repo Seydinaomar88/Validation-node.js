@@ -1,29 +1,35 @@
 import React, { useEffect, useState } from "react";
 import { X } from "lucide-react";
+import { usePosts } from "../contexts/postContext";
+import toast from "react-hot-toast";
 
 const ModalPost = () => {
   const [error, setError] = useState("");
   const [postData, setPostData] = useState({ title: "", content: "" });
 
-  // const { user, addPosts } = usePosts();
-  // console.log("user de addPosts : ", user);
+  const { addPosts } = usePosts();
 
-  // const handlePosts = async (e) => {
-  //   e.preventDefault();
+  const handlePosts = async (e) => {
+    e.preventDefault();
 
-  //   if (!postData.title || !postData.content) {
-  //     setError("tous les champs sont requis");
-  //     return;
-  //   }
+    if (!postData.title.trim() || !postData.content.trim()) {
+      setError("Tous les champs sont requis");
+      return;
+    }
 
-  //   try {
-  //     const res = await addPosts(postData);
-  //     console.log(res);
-  //     document.getElementById("my_modal_2").close();
-  //   } catch (error) {
-  //     console.log(error);
-  //   }
-  // };
+    try {
+      setError("");
+
+      const res = await addPosts(postData);
+      console.log("Post ajouté avec succès :", res);
+      setPostData({ title: "", content: "" });
+      await document.getElementById("my_modal_2").close();
+      toast.success("post ajouté avec succès");
+    } catch (error) {
+      console.error("Erreur lors de l'ajout :", error);
+      setError(error.response?.data?.message || "Une erreur est survenue");
+    }
+  };
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -50,7 +56,7 @@ const ModalPost = () => {
           </form>
         </div>
 
-        <form onSubmit={{}} className="p-6 flex flex-col gap-5">
+        <form onSubmit={handlePosts} className="p-6 flex flex-col gap-5">
           <div>
             <label
               htmlFor="title"
