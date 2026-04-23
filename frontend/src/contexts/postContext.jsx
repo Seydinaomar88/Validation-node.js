@@ -30,9 +30,9 @@ export const PostProvider = ({ children }) => {
     }
   };
 
-  const likePosts = async (id) => {
+  const likePosts = async (postId) => {
     try {
-      const response = await apiClient.post(`/posts/${id}`);
+      const response = await apiClient.post(`/posts/${postId}/like`);
       setPosts(response.data);
       console.log(response.data);
       return response.data;
