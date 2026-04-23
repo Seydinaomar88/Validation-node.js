@@ -1,10 +1,13 @@
 import { AuthProvider } from "./authContext";
+import { CommentProvider } from "./commentContext";
 import { PostProvider } from "./postContext";
 
 const AppProvider = ({ children }) => {
   return (
     <AuthProvider>
-      <PostProvider>{children}</PostProvider>
+      <PostProvider>
+        <CommentProvider>{children}</CommentProvider>
+      </PostProvider>
     </AuthProvider>
   );
 };

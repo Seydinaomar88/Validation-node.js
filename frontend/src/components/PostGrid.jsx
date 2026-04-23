@@ -1,11 +1,11 @@
-// PostGrid.jsx
 import React, { useEffect } from "react";
-import PostCard from "./PostCard"; // Assurez-vous d'avoir ce composant
+import PostCard from "./PostCard";
 import Pagination from "./Pagination";
 import { usePosts } from "../contexts/postContext";
 
 const PostGrid = () => {
   const { posts, fetchPosts } = usePosts();
+  console.log(posts);
 
   useEffect(() => {
     fetchPosts();
@@ -24,6 +24,7 @@ const PostGrid = () => {
             body={post.content}
             initialLikes={post.likes.length}
             comments={post.comments}
+            post={post._id}
           />
         ))}
       </div>
