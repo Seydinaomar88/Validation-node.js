@@ -4,13 +4,12 @@ import "./index.css";
 import App from "./App.jsx";
 import { AuthProvider } from "./contexts/authContext.jsx";
 import { PostProvider } from "./contexts/postContext.jsx";
+import AppProvider from "./contexts/AppProvider.jsx";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
-    <AuthProvider>
-      <PostProvider>
-        <App />
-      </PostProvider>
-    </AuthProvider>
+    <AppProvider>
+      <App />
+    </AppProvider>
   </StrictMode>,
 );
