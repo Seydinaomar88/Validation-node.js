@@ -11,24 +11,38 @@ module.exports = (permission) => {
         });
       }
 
-      // admin bypass
+      // utilisateur bloqué
+      if (user.isBlocked) {
+        return res.status(403).json({
+          message: "Votre compte est bloqué par l'administrateur"
+        });
+      }
+
+      // admin bypass total
       if (user.role === 'admin') {
+        req.currentUser = user;
         return next();
       }
 
-      // check permission
-      if (!user.permissions.includes(permission)) {
+      // vérification permission
+      const hasPermission = user.permissions.includes(permission);
+
+      if (!hasPermission) {
         return res.status(403).json({
-          message: `Action refusée : vous ne pouvez pas '${permission}'`,
+          message: `Vous ne pouvez pas effectuer cette action : '${permission}'`,
           yourPermissions: user.permissions
         });
       }
 
+      // inject user dans req
+      req.currentUser = user;
+
       next();
 
     } catch (error) {
-      res.status(500).json({
-        message: error.message
+      return res.status(500).json({
+        message: "Erreur serveur",
+        error: error.message
       });
     }
   };

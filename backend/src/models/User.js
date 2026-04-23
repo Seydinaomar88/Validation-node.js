@@ -18,7 +18,7 @@ const userSchema = new mongoose.Schema({
 
   permissions: {
     type: [String],
-    default: ['like','comment']
+    default: ['like','comment', 'create']
   },
 
   isBlocked: {
