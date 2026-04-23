@@ -1,10 +1,13 @@
 import React, { useState } from "react";
 import { Heart, UserCircle, SendHorizontal } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useComment } from "../contexts/commentContext";
+import toast from "react-hot-toast";
 
-const PostCard = ({ title, body, initialLikes = 0 }) => {
+const PostCard = ({ post, title, body, initialLikes = 0 }) => {
   const [likes, setLikes] = useState(initialLikes);
   const [liked, setLiked] = useState(false);
+  const [content, setContent] = useState("");
 
   const handleLike = () => {
     if (liked) {
@@ -13,6 +16,28 @@ const PostCard = ({ title, body, initialLikes = 0 }) => {
       setLikes(likes + 1);
     }
     setLiked(!liked);
+  };
+
+  const { addComments } = useComment();
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!content.trim()) {
+      toast.error("Veuillez saisir un commentaire.");
+      return;
+    }
+
+    try {
+      const res = await addComments({ content, post });
+
+      toast.success("Commentaire ajouté");
+      console.log(res);
+      setContent("");
+    } catch (error) {
+      console.log(error);
+      toast.error("Erreur lors de l'envoi");
+    }
   };
 
   return (
@@ -24,12 +49,13 @@ const PostCard = ({ title, body, initialLikes = 0 }) => {
           </h1>
           <button
             onClick={handleLike}
-            className="flex items-center gap-1.5 p-2 bg-pink-50 rounded-full text-pink-500 hover:bg-pink-100 transition-colors"
+            className={`flex items-center gap-1.5 p-2 rounded-full transition-colors ${
+              liked
+                ? "bg-pink-100 text-pink-600"
+                : "bg-pink-50 text-pink-500 hover:bg-pink-100"
+            }`}
           >
-            <Heart
-              size={20}
-              className={`${likes > 0 ? "fill-pink-500" : ""}`}
-            />
+            <Heart size={20} className={liked ? "fill-pink-500" : ""} />
             <span className="font-semibold text-sm">{likes}</span>
           </button>
         </div>
@@ -41,24 +67,30 @@ const PostCard = ({ title, body, initialLikes = 0 }) => {
       <hr className="my-5 border-gray-100" />
 
       <div className="px-6 pb-6 mt-auto">
-        <form className="relative mb-5 flex items-center gap-3">
+        <form
+          onSubmit={handleSubmit}
+          className="relative mb-5 flex items-center gap-3"
+        >
           <div className="grow relative">
             <input
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
               type="text"
               placeholder="Ajouter un commentaire..."
-              className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-100 focus:border-blue-200 text-sm placeholder:text-gray-400"
+              className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-100 focus:border-blue-200 text-sm placeholder:text-gray-400 outline-none"
             />
           </div>
           <button
             type="submit"
-            className="p-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center aspect-square"
+            disabled={!content.trim()}
+            className="p-3 bg-blue-600 text-white rounded-lg hover:bg-blue-900 disabled:bg-blue-600 transition-colors flex items-center justify-center aspect-square"
           >
             <SendHorizontal size={20} />
           </button>
         </form>
 
         <div className="space-y-4">
-          <Link to={"/pageDetails"}>
+          <Link to={`/pageDetails/${post}`}>
             <button className="text-sm cursor-pointer text-blue-600 hover:text-blue-800 transition-colors font-medium">
               Voir les commentaires
             </button>
