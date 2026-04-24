@@ -1,7 +1,7 @@
-const postService = require('../services/post.service');
+const postService = require("../services/post.service");
 
 /**
- * CREATE
+ * CREATE POST
  */
 exports.create = async (req, res) => {
   try {
@@ -13,15 +13,11 @@ exports.create = async (req, res) => {
 };
 
 /**
- * GET ALL (PAGINATION)
+ * GET ALL POSTS (SANS PAGINATION + commentCount)
  */
 exports.getAll = async (req, res) => {
   try {
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10;
-
-    const data = await postService.getAllPosts(page, limit);
-
+    const data = await postService.getAllPosts();
     res.json(data);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -29,7 +25,7 @@ exports.getAll = async (req, res) => {
 };
 
 /**
- * GET ONE
+ * GET ONE POST
  */
 exports.getOne = async (req, res) => {
   try {
@@ -41,7 +37,7 @@ exports.getOne = async (req, res) => {
 };
 
 /**
- * UPDATE
+ * UPDATE POST
  */
 exports.update = async (req, res) => {
   try {
@@ -60,7 +56,7 @@ exports.update = async (req, res) => {
 };
 
 /**
- * DELETE
+ * DELETE POST
  */
 exports.remove = async (req, res) => {
   try {
@@ -78,15 +74,11 @@ exports.remove = async (req, res) => {
 };
 
 /**
- * LIKE
+ * LIKE / UNLIKE POST
  */
 exports.like = async (req, res) => {
   try {
-    const result = await postService.toggleLike(
-      req.params.id,
-      req.user.id
-    );
-
+    const result = await postService.toggleLike(req.params.id, req.user.id);
     res.json(result);
   } catch (error) {
     res.status(400).json({ message: error.message });

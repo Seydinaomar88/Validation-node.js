@@ -1,4 +1,5 @@
 const Post = require('../models/Post');
+const Comment = require('../models/Comment');
 
 /**
  * CREATE POST
@@ -13,23 +14,31 @@ exports.createPost = async (data, userId) => {
 /**
  * GET ALL POSTS (PAGINATION)
  */
-exports.getAllPosts = async (page = 1, limit = 10) => {
-  const skip = (page - 1) * limit;
+exports.getAllPosts = async () => {
+  try {
+    const posts = await Post.find()
+      .populate("author", "name email")
+      .sort({ createdAt: -1 });
 
-  const posts = await Post.find()
-    .populate('author', 'name email')
-    .sort({ createdAt: -1 })
-    .skip(skip)
-    .limit(limit);
+    const postsWithComments = await Promise.all(
+      posts.map(async (post) => {
+        const comments = await Comment.find({ post: post._id })
+          .populate("author", "name")
+          .sort({ createdAt: -1 });
 
-  const total = await Post.countDocuments();
+        return {
+          ...post.toObject(),
+          comments, // 👈 ici tu ajoutes les vrais commentaires
+          commentCount: comments.length
+        };
+      })
+    );
 
-  return {
-    posts,
-    totalPosts: total,
-    currentPage: page,
-    totalPages: Math.ceil(total / limit)
-  };
+    return postsWithComments;
+  } catch (error) {
+    console.log("POST SERVICE ERROR:", error);
+    throw error;
+  }
 };
 
 /**
