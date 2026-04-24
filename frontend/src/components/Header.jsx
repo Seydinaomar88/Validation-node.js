@@ -12,6 +12,7 @@ const Header = () => {
     navigate("/");
   };
 
+  // dddd
   return (
     <header className="flex fixed z-50 top-0 w-full flex-col  items-center   ">
       <div className="flex justify-between w-full p-4 bg-white border-b border-gray-100">
