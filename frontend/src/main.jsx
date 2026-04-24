@@ -9,7 +9,9 @@ import AppProvider from "./contexts/AppProvider.jsx";
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <AppProvider>
-      <App />
+      <span className="border border-gray-100">
+        <App />
+      </span>
     </AppProvider>
   </StrictMode>,
 );
