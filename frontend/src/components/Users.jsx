@@ -1,79 +1,116 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Search, Trash2, Ban, CheckCircle, User } from "lucide-react";
+import apiClient from "../services/apiClient";
+import toast from "react-hot-toast";
+
+const SUPER_ADMIN_EMAIL = "admin@test.com";
 
 const Users = () => {
-  const [users, setUsers] = useState([
-    {
-      id: 1,
-      name: "Sarah Dev",
-      email: "sarah.devn@gmail.com",
-      role: "Admin",
-      status: "Actif",
-      color: "bg-yellow-100 text-yellow-700",
-    },
-    {
-      id: 2,
-      name: "Marc Dubois",
-      email: "marc@marcdubois.com",
-      role: "Utilisateur",
-      status: "Actif",
-      color: "bg-blue-100 text-blue-700",
-    },
-    {
-      id: 3,
-      name: "Sophie Laurent",
-      email: "sophielaurent@gmail.com",
-      role: "Modérateur",
-      status: "Inactif",
-      color: "bg-purple-100 text-purple-700",
-    },
-    {
-      id: 4,
-      name: "Sophie Laurent",
-      email: "sophielaurent@gmail.com",
-      role: "Modérateur",
-      status: "Inactif",
-      color: "bg-purple-100 text-purple-700",
-    },
-    {
-      id: 5,
-      name: "Sophie Laurent",
-      email: "sophielaurent@gmail.com",
-      role: "Modérateur",
-      status: "Inactif",
-      color: "bg-purple-100 text-purple-700",
-    },
-    {
-      id: 6,
-      name: "Sophie Laurent",
-      email: "sophielaurent@gmail.com",
-      role: "Modérateur",
-      status: "Inactif",
-      color: "bg-purple-100 text-purple-700",
-    },
-  ]);
+  const [users, setUsers] = useState([]);
 
-  const handleDelete = (userId) => {
-    if (
-      window.confirm(
-        "Êtes-vous sûr de vouloir supprimer cet utilisateur définitivement ?",
-      )
-    ) {
-      setUsers(users.filter((user) => user.id !== userId));
+  // ================= FETCH USERS =================
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const res = await apiClient.get("/admin/users");
+        setUsers(res.data);
+      } catch (error) {
+        toast.error("Erreur chargement utilisateurs");
+      }
+    };
+
+    fetchUsers();
+  }, []);
+
+  // ================= SUPER ADMIN PROTECTION =================
+  const isSuperAdmin = (user) => user.email === SUPER_ADMIN_EMAIL;
+
+  const blockedToast = () =>
+    toast.error("Action impossible sur le super admin");
+
+  // ================= DELETE =================
+  const handleDelete = async (user) => {
+    if (isSuperAdmin(user)) return blockedToast();
+
+    if (!window.confirm("Êtes-vous sûr ?")) return;
+
+    try {
+      await apiClient.delete(`/admin/users/${user._id}`);
+      setUsers(users.filter((u) => u._id !== user._id));
+      toast.success("Utilisateur supprimé");
+    } catch (error) {
+      toast.error("Erreur suppression");
     }
   };
 
-  const handleRoleChange = (userId, newRole) => {
-    setUsers((users) =>
-      users.map((user) =>
-        user.id === userId ? { ...user, role: newRole } : user,
-      ),
-    );
+  // ================= ROLE =================
+  const handleRoleChange = async (user, newRole) => {
+    if (isSuperAdmin(user)) return blockedToast();
+
+    try {
+      const res = await apiClient.put(
+        `/admin/users/${user._id}/role`,
+        { role: newRole }
+      );
+
+      setUsers(users.map((u) =>
+        u._id === user._id ? res.data : u
+      ));
+
+      toast.success("Rôle modifié");
+    } catch (error) {
+      toast.error("Erreur rôle");
+    }
+  };
+
+  // ================= BLOCK =================
+  const handleToggleBlock = async (user) => {
+    if (isSuperAdmin(user)) return blockedToast();
+
+    try {
+      const res = await apiClient.put(
+        `/admin/users/${user._id}/block`
+      );
+
+      setUsers(users.map((u) =>
+        u._id === user._id ? res.data.user : u
+      ));
+
+      toast.success("Statut mis à jour");
+    } catch (error) {
+      toast.error("Erreur block");
+    }
+  };
+
+  // ================= PERMISSIONS =================
+  const handlePermissionChange = async (user, permission) => {
+    if (isSuperAdmin(user)) return blockedToast();
+
+    try {
+      let updated = user.permissions || [];
+
+      updated = updated.includes(permission)
+        ? updated.filter((p) => p !== permission)
+        : [...updated, permission];
+
+      const res = await apiClient.put(
+        `/admin/users/${user._id}/permissions`,
+        { permissions: updated }
+      );
+
+      setUsers(users.map((u) =>
+        u._id === user._id ? res.data : u
+      ));
+
+    } catch (error) {
+      toast.error("Erreur permissions");
+    }
   };
 
   return (
     <div className="space-y-6">
-      {/* En-tête avec titre et recherche */}
+
+      {/* HEADER (IDENTIQUE DESIGN ORIGINAL) */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <h1 className="text-2xl font-bold text-gray-800">
           Gestion des Utilisateurs
@@ -89,35 +126,45 @@ const Users = () => {
         </div>
       </div>
 
+      {/* TABLE */}
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm text-gray-600">
+
             <thead className="bg-gray-50 text-gray-500 font-medium border-b border-gray-100">
               <tr>
                 <th className="px-6 py-4">Utilisateur</th>
                 <th className="px-6 py-4">Rôle</th>
+                <th className="px-6 py-4">Permissions</th>
                 <th className="px-6 py-4">Statut</th>
                 <th className="px-6 py-4 text-right">Actions</th>
               </tr>
             </thead>
 
             <tbody className="divide-y divide-gray-100">
+
               {users.map((user) => (
-                <tr
-                  key={user.id}
-                  className="hover:bg-gray-50 transition-colors"
-                >
+                <tr key={user._id} className="hover:bg-gray-50 transition-colors">
+
+                  {/* USER */}
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-4">
-                      <div
-                        className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${user.color}`}
-                      >
+
+                      <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 bg-blue-100 text-blue-700">
                         <User size={20} />
                       </div>
+
                       <div className="flex flex-col">
-                        <span className="font-bold text-gray-800 text-base">
+                        <span className="font-bold text-gray-800 text-base flex items-center gap-2">
                           {user.name}
+                          {isSuperAdmin(user) && (
+                            <span className="text-xs text-red-500 font-bold">
+                              SUPER ADMIN
+                            </span>
+                          )}
                         </span>
+
                         <span className="text-gray-500 text-xs">
                           {user.email}
                         </span>
@@ -125,70 +172,83 @@ const Users = () => {
                     </div>
                   </td>
 
+                  {/* ROLE */}
                   <td className="px-6 py-4">
                     <select
-                      onChange={(e) =>
-                        handleRoleChange(user.id, e.target.value)
-                      }
+                      disabled={isSuperAdmin(user)}
                       value={user.role}
-                      defaultValue="Color scheme"
-                      className={`text-sm select w-30 select-accent font-medium rounded-md px-2 py-1.5 border border-transparent hover:border-gray-200 focus:border-blue-300 focus:ring focus:ring-blue-100 outline-none cursor-pointer transition-all ${
-                        user.role === "Admin"
-                          ? "text-red-600 bg-red-50"
-                          : user.role === "Modérateur"
-                            ? "text-purple-600 bg-purple-50"
-                            : "text-blue-600 bg-blue-50"
-                      }`}
+                      onChange={(e) =>
+                        handleRoleChange(user, e.target.value)
+                      }
+                      className="text-sm font-medium rounded-md px-2 py-1.5 border border-gray-200 focus:border-blue-300 outline-none cursor-pointer"
                     >
-                      <option>Utilisateur</option>
-                      <option>Admin</option>
+                      <option value="user">Utilisateur</option>
+                      <option value="admin">Admin</option>
                     </select>
                   </td>
 
+                  {/* PERMISSIONS */}
+                  <td className="px-6 py-4 text-xs">
+                    {["create", "update", "delete", "like", "comment"].map((perm) => (
+                      <label key={perm} className="mr-3">
+                        <input
+                          type="checkbox"
+                          disabled={isSuperAdmin(user)}
+                          checked={user.permissions?.includes(perm)}
+                          onChange={() =>
+                            handlePermissionChange(user, perm)
+                          }
+                        />
+                        <span className="ml-1">{perm}</span>
+                      </label>
+                    ))}
+                  </td>
+
+                  {/* STATUS */}
                   <td className="px-6 py-4">
                     <span
                       className={`px-2.5 py-1 rounded-full text-xs font-semibold border ${
-                        user.status === "Actif"
-                          ? "bg-green-50 text-green-600 border-green-200"
-                          : "bg-gray-100 text-gray-500 border-gray-200"
+                        user.isBlocked
+                          ? "bg-red-50 text-red-600 border-red-200"
+                          : "bg-green-50 text-green-600 border-green-200"
                       }`}
                     >
-                      {user.status}
+                      {user.isBlocked ? "Bloqué" : "Actif"}
                     </span>
                   </td>
 
+                  {/* ACTIONS */}
                   <td className="px-6 py-4 text-right">
                     <div className="flex items-center justify-end gap-2">
+
+                      {/* BLOCK */}
                       <button
-                        className={`p-2 rounded-lg transition-colors ${
-                          user.status === "Actif"
-                            ? "text-orange-400 hover:text-orange-600 hover:bg-orange-50"
-                            : "text-green-500 hover:text-green-700 hover:bg-green-50"
-                        }`}
-                        title={
-                          user.status === "Actif"
-                            ? "Désactiver le compte"
-                            : "Réactiver le compte"
-                        }
+                        disabled={isSuperAdmin(user)}
+                        onClick={() => handleToggleBlock(user)}
+                        className="p-2 rounded-lg transition-colors disabled:opacity-40"
                       >
-                        {user.status === "Actif" ? (
-                          <Ban size={18} />
-                        ) : (
+                        {user.isBlocked ? (
                           <CheckCircle size={18} />
+                        ) : (
+                          <Ban size={18} />
                         )}
                       </button>
 
+                      {/* DELETE */}
                       <button
-                        onClick={() => handleDelete(user.id)}
-                        className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                        title="Supprimer l'utilisateur"
+                        disabled={isSuperAdmin(user)}
+                        onClick={() => handleDelete(user)}
+                        className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-40"
                       >
                         <Trash2 size={18} />
                       </button>
+
                     </div>
                   </td>
+
                 </tr>
               ))}
+
             </tbody>
           </table>
 
@@ -197,6 +257,7 @@ const Users = () => {
               Aucun utilisateur trouvé.
             </div>
           )}
+
         </div>
       </div>
     </div>

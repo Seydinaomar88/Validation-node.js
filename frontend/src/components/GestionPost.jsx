@@ -1,89 +1,69 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Trash2, Eye, Heart, MessageSquare, Search } from "lucide-react";
+import apiClient from "../services/apiClient";
 
 const GestionPost = () => {
-  const [posts, setPosts] = useState([
-    {
-      id: 1,
-      author: {
-        name: "Sarah Dev",
-        avatar: "S",
-        color: "bg-yellow-400 text-white",
-      },
-      title: "Comment optimiser React en 2024 ?",
-      likes: 145,
-      comments: 32,
-      date: "Aujourd'hui, 10:30",
-    },
-    {
-      id: 2,
-      author: {
-        name: "Marc Dubois",
-        avatar: "M",
-        color: "bg-blue-500 text-white",
-      },
-      title: "Mon premier voyage solo au Japon",
-      likes: 89,
-      comments: 15,
-      date: "Hier, 14:15",
-    },
-    {
-      id: 3,
-      author: {
-        name: "Sophie Laurent",
-        avatar: "S",
-        color: "bg-purple-500 text-white",
-      },
-      title: "Les meilleures applications de productivité",
-      likes: 210,
-      comments: 45,
-      date: "12 Oct 2023",
-    },
-    {
-      id: 4,
-      author: {
-        name: "Alexandre",
-        avatar: "A",
-        color: "bg-green-500 text-white",
-      },
-      title: "Recette Facile : Crêpes Moelleuses",
-      likes: 12,
-      comments: 3,
-      date: "10 Oct 2023",
-    },
-  ]);
+  const [posts, setPosts] = useState([]);
 
-  const handleDelete = (idToRemove) => {
+  // FETCH POSTS ADMIN
+  useEffect(() => {
+    const fetchPosts = async () => {
+      try {
+        const res = await apiClient.get("/admin/posts");
+        setPosts(res.data);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+    fetchPosts();
+  }, []);
+
+  // DELETE POST
+  const handleDelete = async (id) => {
     const confirmDelete = window.confirm(
-      "Êtes-vous sûr de vouloir supprimer ce post ?",
+      "Êtes-vous sûr de vouloir supprimer ce post ?"
     );
-    if (confirmDelete) {
-      setPosts(posts.filter((post) => post.id !== idToRemove));
+
+    if (!confirmDelete) return;
+
+    try {
+      await apiClient.delete(`/admin/posts/${id}`);
+      setPosts(posts.filter((post) => post._id !== id));
+    } catch (error) {
+      console.log(error);
     }
   };
 
   return (
     <div className="space-y-6">
+
+      {/* HEADER */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <h1 className="text-2xl font-bold text-gray-800">Gestion des Posts</h1>
+        <h1 className="text-2xl font-bold text-gray-800">
+          Gestion des Posts
+        </h1>
 
         <div className="relative w-full sm:w-72">
           <input
             type="text"
             placeholder="Rechercher un post..."
-            className="w-full pl-10 pr-4 py-2 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-100 focus:border-blue-400 outline-none transition-all text-sm"
+            className="w-full pl-10 pr-4 py-2 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-100 focus:border-blue-400 outline-none text-sm"
           />
           <Search size={18} className="absolute left-3 top-2.5 text-gray-400" />
         </div>
       </div>
 
+      {/* TABLE */}
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
         <div className="overflow-x-auto">
+
           <table className="w-full text-left text-sm text-gray-600">
-            <thead className="bg-gray-50 text-gray-500 font-medium border-b border-gray-100">
+
+            <thead className="bg-gray-50 text-gray-500 border-b">
               <tr>
                 <th className="px-6 py-4">Auteur</th>
-                <th className="px-6 py-4">Titre du post</th>
+                <th className="px-6 py-4">Titre</th>
                 <th className="px-6 py-4 text-center">Likes</th>
                 <th className="px-6 py-4 text-center">Commentaires</th>
                 <th className="px-6 py-4">Date</th>
@@ -92,72 +72,83 @@ const GestionPost = () => {
             </thead>
 
             <tbody className="divide-y divide-gray-100">
+
               {posts.map((post) => (
-                <tr
-                  key={post.id}
-                  className="hover:bg-gray-50 transition-colors group"
-                >
+                <tr key={post._id} className="hover:bg-gray-50">
+
+                  {/* AUTHOR */}
                   <td className="px-6 py-4 flex items-center gap-3">
-                    <div
-                      className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs ${post.author.color}`}
-                    >
-                      {post.author.avatar}
+                    <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center font-bold text-xs">
+                      {post.author?.name?.charAt(0)}
                     </div>
+
                     <span className="font-medium text-gray-800">
-                      {post.author.name}
+                      {post.author?.name}
                     </span>
                   </td>
 
+                  {/* TITLE */}
                   <td className="px-6 py-4">
-                    <p className="font-medium text-gray-800 truncate max-w-[200px] lg:max-w-xs">
+                    <p className="font-medium truncate max-w-[200px]">
                       {post.title}
                     </p>
                   </td>
 
-                  <td className="px-6 py-4">
-                    <div className="flex items-center justify-center gap-1.5 text-gray-600">
+                  {/* LIKES */}
+                  <td className="px-6 py-4 text-center">
+                    <div className="flex items-center justify-center gap-1">
                       <Heart size={16} className="text-pink-500" />
-                      <span className="font-medium">{post.likes}</span>
+                      <span>{post.likes?.length || 0}</span>
                     </div>
                   </td>
 
-                  <td className="px-6 py-4">
-                    <div className="flex items-center justify-center gap-1.5 text-gray-600">
+                  {/* COMMENTS */}
+                  <td className="px-6 py-4 text-center">
+                    <div className="flex items-center justify-center gap-1">
                       <MessageSquare size={16} className="text-blue-500" />
-                      <span className="font-medium">{post.comments}</span>
+                      <span>{post.comments?.length || 0}</span>
                     </div>
                   </td>
 
-                  <td className="px-6 py-4 whitespace-nowrap">{post.date}</td>
+                  {/* DATE */}
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    {new Date(post.createdAt).toLocaleDateString()}
+                  </td>
 
+                  {/* ACTIONS */}
                   <td className="px-6 py-4 text-right">
-                    <div className="flex items-center justify-end gap-2">
+                    <div className="flex justify-end gap-2">
+
                       <button
-                        className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                        title="Voir le post"
+                        className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg"
+                        title="Voir"
                       >
                         <Eye size={18} />
                       </button>
 
                       <button
-                        onClick={() => handleDelete(post.id)}
-                        className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                        title="Supprimer le post"
+                        onClick={() => handleDelete(post._id)}
+                        className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg"
+                        title="Supprimer"
                       >
                         <Trash2 size={18} />
                       </button>
+
                     </div>
                   </td>
+
                 </tr>
               ))}
+
             </tbody>
           </table>
 
           {posts.length === 0 && (
             <div className="p-10 text-center text-gray-500">
-              Aucun post n'a été trouvé.
+              Aucun post trouvé
             </div>
           )}
+
         </div>
       </div>
     </div>

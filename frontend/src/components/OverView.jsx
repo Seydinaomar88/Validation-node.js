@@ -1,7 +1,31 @@
 import { AlertCircle, Heart, MessageSquare, Users } from "lucide-react";
 import StatCard from "./StatCard";
+import { useEffect, useState } from "react";
+import apiClient from "../services/apiClient";
+
 
 const Overview = () => {
+
+  const [stats, setStats] = useState({
+  totalUsers: 0,
+  totalPosts: 0,
+  totalComments: 0,
+  totalLikes: 0,
+});
+
+useEffect(() => {
+  const fetchStats = async () => {
+    try {
+      const res = await apiClient.get("/stats");
+      setStats(res.data);
+    } catch (error) {
+      console.log("Erreur stats :", error);
+    }
+  };
+
+  fetchStats();
+}, []);
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -11,25 +35,25 @@ const Overview = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard
           title="Utilisateurs totaux"
-          value="2,841"
+          value={stats.totalUsers}
           icon={<Users />}
           colorClass="bg-blue-50 text-blue-600"
         />
         <StatCard
           title="Total des Likes"
-          value="120k+"
+          value={stats.totalLikes}
           icon={<Heart />}
           colorClass="bg-pink-50 text-pink-600"
         />
         <StatCard
           title="Commentaires"
-          value="45,109"
+          value={stats.totalComments}
           icon={<MessageSquare />}
           colorClass="bg-green-50 text-green-600"
         />
         <StatCard
           title="Total des Posts"
-          value="45,109"
+          value={stats.totalPosts}
           icon={<MessageSquare />}
           colorClass="bg-green-50 text-green-600"
         />

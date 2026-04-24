@@ -31,16 +31,27 @@ export const PostProvider = ({ children }) => {
   };
 
   const likePosts = async (postId) => {
-    try {
-      const response = await apiClient.post(`/posts/${postId}/like`);
-      setPosts(response.data);
-      console.log(response.data);
-      return response.data;
-    } catch (error) {
-      console.log("Erreur fetch posts :", error);
-      throw error;
-    }
-  };
+  try {
+    const response = await apiClient.post(`/posts/${postId}/like`);
+
+    // mise à jour locale propre
+    setPosts((prevPosts) =>
+      prevPosts.map((p) =>
+        p._id === postId
+          ? {
+              ...p,
+              likes: Array(response.data.likesCount).fill(0) // juste pour length
+            }
+          : p
+      )
+    );
+
+    return response.data;
+  } catch (error) {
+    console.log("Erreur like :", error);
+    throw error;
+  }
+};
 
   return (
     <PostContext.Provider value={{ posts, addPosts, fetchPosts, likePosts }}>
