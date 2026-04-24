@@ -5,12 +5,16 @@ import apiClient from "../services/apiClient";
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(() => {
+    const stored = localStorage.getItem("user");
+    return stored ? JSON.parse(stored) : null;
+  });
 
   const login = async (userData) => {
     try {
       const response = await apiClient.post("/auth/login", userData);
       setUser(response.data);
+      localStorage.setItem("user", JSON.stringify(response.data));
       return response.data;
     } catch (error) {
       console.log("Erreur sur login :", error);
@@ -22,14 +26,18 @@ export const AuthProvider = ({ children }) => {
     try {
       const response = await apiClient.post("/auth/register", userData);
       setUser(response.data);
+      // ✅ Sauvegarder dans localStorage
+      localStorage.setItem("user", JSON.stringify(response.data));
       return response.data;
     } catch (error) {
       console.log("Erreur sur register :", error);
       throw error;
     }
   };
+
   const logout = () => {
     setUser(null);
+    localStorage.removeItem("user");
   };
 
   return (

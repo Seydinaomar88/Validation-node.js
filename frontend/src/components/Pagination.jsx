@@ -12,28 +12,32 @@ const Pagination = ({ currentPage, onPageChange, totalPages = 5 }) => {
         className="flex items-center gap-1 rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-40"
       >
         <i className="ri-arrow-left-s-line text-lg"></i>
-        <span className="hover:text-white">Precedent</span>
+        <span className="hover:text-white">Précédent</span>
       </button>
 
       <ul className="flex items-center gap-1">
-        {[1, 2, 3].map((page) => (
-          <li key={page}>
-            <button
-              onClick={() => onPageChange(page)}
-              className={`flex h-10 w-10 items-center hover:text-white justify-center rounded-md border text-sm transition-all ${
-                currentPage === page
-                  ? "border-neutral-700 bg-white font-bold shadow-sm"
-                  : "border-transparent hover:bg-blue-700"
-              }`}
-            >
-              {page}
-            </button>
-          </li>
-        ))}
+        {Array.from({ length: Math.min(3, totalPages) }, (_, i) => i + 1).map(
+          (page) => (
+            <li key={page}>
+              <button
+                onClick={() => onPageChange(page)}
+                className={`flex h-10 w-10 items-center justify-center rounded-md border text-sm transition-all hover:text-white ${
+                  currentPage === page
+                    ? "border-neutral-700 bg-white font-bold shadow-sm"
+                    : "border-transparent hover:bg-blue-700"
+                }`}
+              >
+                {page}
+              </button>
+            </li>
+          ),
+        )}
 
-        <li className="flex h-10 items-center px-2 text-neutral-500">
-          <i className="ri-more-fill"></i>
-        </li>
+        {totalPages > 3 && (
+          <li className="flex h-10 items-center px-2 text-neutral-500">
+            <i className="ri-more-fill"></i>
+          </li>
+        )}
       </ul>
 
       <button

@@ -6,6 +6,7 @@ import PostDetailPage from "./pages/PostDetailPage";
 import Register from "./pages/Register";
 import Login from "./pages/Login";
 import { Toaster } from "react-hot-toast";
+import ProtectedRoute from "./guards/ProtectedRoute";
 
 const App = () => {
   return (
@@ -13,11 +14,35 @@ const App = () => {
       <Toaster position="top-center" />
       <main className="min-h-screen">
         <Routes>
+          {/* Routes publiques */}
           <Route path="/" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          <Route path="/home" element={<Home />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/pageDetails/:id" element={<PostDetailPage />} />
+
+          {/* Routes protégées */}
+          <Route
+            path="/home"
+            element={
+              <ProtectedRoute>
+                <Home />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/pageDetails/:id"
+            element={
+              <ProtectedRoute>
+                <PostDetailPage />
+              </ProtectedRoute>
+            }
+          />
         </Routes>
       </main>
     </BrowserRouter>

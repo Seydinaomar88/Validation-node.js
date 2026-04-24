@@ -4,6 +4,12 @@
   --color-bgGray: #f3f4f6;
 }
 
+@layer base {
+  body {
+    background-color: #f3f4f6;
+  }
+}
+
 @layer utilities {
   .bord-b {
     border: 1px solid black;
