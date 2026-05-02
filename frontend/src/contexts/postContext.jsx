@@ -19,19 +19,24 @@ export const PostProvider = ({ children }) => {
     setCurrentPage(page);
   };
 
-  const fetchPosts = async () => {
-    try {
-      const response = await apiClient.get("/posts/");
-      const allData = response.data.posts;
-      setAllPosts(allData);
-      setTotalPages(Math.ceil(allData.length / POSTS_PER_PAGE));
-      paginate(allData, 1);
-      return allData;
-    } catch (error) {
-      console.log("Erreur fetch posts :", error);
-      throw error;
-    }
-  };
+const fetchPosts = async () => {
+  try {
+    const response = await apiClient.get("/posts/");
+    console.log("response.data :", response.data); // ← vérifiez ici
+    
+    const allData = Array.isArray(response.data)
+      ? response.data
+      : response.data.posts ?? [];
+
+    setAllPosts(allData);
+    setTotalPages(Math.ceil(allData.length / POSTS_PER_PAGE));
+    paginate(allData, 1);
+    return allData;
+  } catch (error) {
+    console.log("Erreur fetch posts :", error);
+    throw error;
+  }
+};
 
   const changePage = (page) => {
     paginate(allPosts, page);

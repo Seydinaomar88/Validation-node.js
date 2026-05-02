@@ -13,9 +13,10 @@ const ModalDetailsPost = ({ postId, modalId }) => {
   const { fetchPostById, updatePosts, deletePosts } = usePosts();
   const { user } = useAuth();
 
-  const isAuthor = user && post && user.user.id === post.author._id;
-
-  console.log("user complet :", user);
+  // user contient { success, message, user: { id, name... }, token }
+  // On extrait proprement l'id
+  const currentUserId = user?.user?.id;
+  const isAuthor = currentUserId && post && currentUserId === post.author._id;
 
   useEffect(() => {
     if (!postId) return;
@@ -39,8 +40,13 @@ const ModalDetailsPost = ({ postId, modalId }) => {
   const handleUpdate = async (id) => {
     try {
       const data = { title: editTitle, content: editContent };
-      const response = await updatePosts({ data, id });
-      console.log(response);
+      await updatePosts({ data, id });
+      setPost((prev) => ({
+        ...prev,
+        title: editTitle,
+        content: editContent,
+      }));
+      setIsEditing(false);
     } catch (error) {
       console.log(error);
     }
@@ -110,15 +116,7 @@ const ModalDetailsPost = ({ postId, modalId }) => {
                       Annuler
                     </button>
                     <button
-                      onClick={async () => {
-                        await handleUpdate(postId);
-                        setPost((prev) => ({
-                          ...prev,
-                          title: editTitle,
-                          content: editContent,
-                        }));
-                        setIsEditing(false);
-                      }}
+                      onClick={() => handleUpdate(postId)}
                       className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors"
                     >
                       <Save size={15} />
